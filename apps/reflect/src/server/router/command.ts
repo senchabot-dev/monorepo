@@ -42,7 +42,7 @@ export const commandRouter = t.router({
           },
         });
 
-        discordServer.forEach(server => dcServersArray.push(server.serverId));
+        discordServer.forEach((server: {serverId: string}) => dcServersArray.push(server.serverId));
       }
 
       const command = await ctx.prisma.botCommands.findFirst({
@@ -98,7 +98,7 @@ export const commandRouter = t.router({
         },
       });
 
-      discordServer.forEach(server => dcServersArray.push(server.serverId));
+      discordServer.forEach((server: {serverId: string}) => dcServersArray.push(server.serverId));
     }
 
     const botCommands = await ctx.prisma.botCommands.findMany({
@@ -145,7 +145,7 @@ export const commandRouter = t.router({
         },
       });
 
-      discordServer.forEach(server => dcServersArray.push(server.serverId));
+      discordServer.forEach((server: {serverId: string}) => dcServersArray.push(server.serverId));
     }
 
     const commandAlias = await ctx.prisma.botCommandAliases.findMany({

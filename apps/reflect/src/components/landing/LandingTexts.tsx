@@ -30,7 +30,7 @@ const LandingTexts = () => {
       alert("Twitch bot added");
     },
 
-    onError(error) {
+    onError(error: any) {
       if (!error.shape) return;
       alert(error.shape.message);
     },
@@ -39,7 +39,7 @@ const LandingTexts = () => {
   useEffect(() => {
     getDefaultCmdList().then(res => {
       if (!commandList.isLoading && session) {
-        const cmds = commandList.data?.map(cmd => "!" + cmd.commandName);
+        const cmds = commandList.data?.map((cmd: {commandName: string}) => "!" + cmd.commandName);
         if (cmds) {
           const tocmds = [...res.defaultCmd, ...cmds];
           setCmdList(tocmds);

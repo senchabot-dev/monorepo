@@ -11,7 +11,7 @@ export const botRouter = t.router({
     });
 
     const twitchAccs: string[] = [];
-    (await twitchAccount).map(acc => twitchAccs.push(acc.providerAccountId));
+    (await twitchAccount).map((acc: {providerAccountId: string}) => twitchAccs.push(acc.providerAccountId));
 
     const twitchChannels = ctx.prisma.twitchChannel.findMany({
       where: {
@@ -73,7 +73,7 @@ export const botRouter = t.router({
         },
       });
 
-      discordServer.forEach(server => dcServersArray.push(server.serverId));
+      discordServer.forEach((server: {serverId: string}) => dcServersArray.push(server.serverId));
     }
 
     const botActivities = await ctx.prisma.botActionActivities.findMany({

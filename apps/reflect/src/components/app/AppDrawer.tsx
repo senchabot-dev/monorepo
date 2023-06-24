@@ -44,7 +44,7 @@ const AppDrawer: FC<IProps> = ({ isDrawerOpen, drawerHandler }) => {
       alert("Twitch bot added");
     },
 
-    onError(error) {
+    onError(error: any) {
       if (!error.shape) return;
       alert(error.shape.message);
     },

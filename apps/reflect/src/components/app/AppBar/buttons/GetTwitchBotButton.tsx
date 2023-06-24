@@ -11,7 +11,7 @@ const GetTwitchBotButton = () => {
       alert("Twitch bot added");
     },
 
-    onError(error) {
+    onError(error: any) {
       if (!error.shape) return;
       alert(error.shape.message);
     },

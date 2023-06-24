@@ -43,7 +43,7 @@ const SystemMessage = () => {
                   <ListItemText>
                     Discord Servers:{" "}
                     {discordServers.data?.map(
-                      (sv, index) =>
+                      (sv: any, index: number) =>
                         sv.serverName +
                         (index !==
                         (discordServers.data && discordServers.data?.length - 1)
@@ -64,7 +64,7 @@ const SystemMessage = () => {
                   <ListItemText>
                     Twitch Channels:{" "}
                     {twitchChannels.data?.map(
-                      (ch, index) =>
+                      (ch: any, index: number) =>
                         ch.channelName +
                         (index !==
                         (twitchChannels.data && twitchChannels.data.length - 1)

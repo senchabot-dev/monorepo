@@ -33,7 +33,7 @@ const SecurityForm = () => {
           {isLoading
             ? "Loading..."
             : accounts.data?.map(
-                (account, index) =>
+                (account: any, index: number) =>
                   accounts &&
                   (accounts.data && accounts.data.length - 1 === index
                     ? (index > 2 ? "and " : "") +

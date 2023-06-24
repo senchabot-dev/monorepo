@@ -18,7 +18,7 @@ type IProps = {
 
 const LinkAccount: FC<IProps> = ({ accountType, accountTitle, icon }) => {
   const accounts = trpc.security.getAccounts.useQuery();
-  const currentProviders = accounts.data?.map(account => account.provider);
+  const currentProviders = accounts.data?.map((account: any) => account.provider);
 
   return (
     <>
