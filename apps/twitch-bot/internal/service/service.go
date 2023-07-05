@@ -9,6 +9,7 @@ import (
 	"github.com/senchabot-dev/monorepo/apps/twitch-bot/internal/models"
 	"github.com/senchabot-dev/monorepo/apps/twitch-bot/internal/service/database"
 	"github.com/senchabot-dev/monorepo/apps/twitch-bot/internal/service/database/postgresql"
+	"github.com/senchabot-dev/monorepo/apps/twitch-bot/internal/service/timer"
 	"github.com/senchabot-dev/monorepo/apps/twitch-bot/internal/service/webhook"
 )
 
@@ -35,21 +36,46 @@ type Service interface {
 	CreateCommandAliases(ctx context.Context, commandName string, aliases []string, twitchChannelId string, createdBy string) (*string, error)
 	CheckCommandAliasExist(ctx context.Context, commandAlias string, twitchChannelId string) (*string, error)
 	DeleteCommandAlias(ctx context.Context, commandAlias string, twitchChannelId string) (*string, error)
+
+	SetTimer(client *client.Clients, channelName string, commandData *models.BotCommand, interval int)
+	SetTimerEnabled(client *client.Clients, commandId int)
+	SetTimerDisabled(commandId int)
+	GetTimerStatus(commandId int) bool
 }
 
 type services struct {
 	DB      database.Database
 	Webhook webhook.Webhook
+	Timer   timer.Timer
 }
 
 func NewServices() Service {
 	dbService := postgresql.NewPostgreSQL()
 	whService := webhook.NewWebhooks()
+	timerService := timer.NewTimer()
 
 	return &services{
 		DB:      dbService,
 		Webhook: whService,
+		Timer:   timerService,
 	}
+}
+
+func (s *services) SetTimer(client *client.Clients, channelName string, commandData *models.BotCommand, interval int) {
+	// platform, channelId, commandData, interval, status
+	s.Timer.SetTimer(client, channelName, commandData, interval)
+}
+
+func (s *services) SetTimerEnabled(client *client.Clients, commandId int) {
+	s.Timer.SetTimerEnabled(client, commandId)
+}
+
+func (s *services) SetTimerDisabled(commandId int) {
+	s.Timer.SetTimerDisabled(commandId)
+}
+
+func (s *services) GetTimerStatus(commandId int) bool {
+	return s.Timer.GetTimerStatus(commandId)
 }
 
 func (s *services) BotJoinWebhook(client *client.Clients, joinedChannelList []string, w http.ResponseWriter, r *http.Request) {

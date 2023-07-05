@@ -37,6 +37,8 @@ func (c *commands) GetCommands() map[string]func(context context.Context, messag
 		"sukru":     c.SukruCommand,
 		"sozluk":    c.SozlukCommand,
 
+		"timer": c.TimerCommand,
+
 		"acmd": c.AddCommandCommand,
 		"ucmd": c.UpdateCommandCommand,
 		"dcmd": c.DeleteCommandCommand,
