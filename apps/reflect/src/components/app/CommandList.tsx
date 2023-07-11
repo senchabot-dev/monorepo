@@ -16,7 +16,6 @@ import {
   styled,
 } from "@mui/material";
 import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
-import { trpc } from "../../utils/trpc";
 import LoadingBox from "../loading/LoadingBox";
 import { IBotCommand, IBotCommandAlias } from "../../types";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -26,6 +25,7 @@ import MuiAccordionSummary, {
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import { useEffect, useMemo, useState } from "react";
 import { BiSearchAlt } from "react-icons/bi";
+import { getAliasList, getCommandList } from "src/api";
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion
@@ -59,8 +59,6 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 const CommandList = () => {
-  const commandList = trpc.command.getCommandList.useQuery();
-  const commandAlias = trpc.command.getAliasList.useQuery();
   const [isLoading, setIsLoading] = useState(true);
   const [botCommands, setBotCommands] = useState<IBotCommand[]>();
   const [aliasCommands, setAliasCommands] = useState<IBotCommandAlias[]>();
@@ -73,13 +71,15 @@ const CommandList = () => {
     };
 
   useEffect(() => {
-    if (!commandList.isLoading) {
-      if (!commandList.data) return;
-      setBotCommands(commandList.data);
-      setAliasCommands(commandAlias.data);
+    getCommandList().then(res => {
+      if (!res.data) return;
+      setBotCommands(res.data);
+      getAliasList().then(res => {
+        setAliasCommands(res.data);
+      });
       setIsLoading(false);
-    }
-  }, [commandList, commandAlias]);
+    });
+  }, [isLoading]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -94,7 +94,12 @@ const CommandList = () => {
 
   return (
     <Paper
-      sx={{ mt: "10px", backgroundColor: "#000", padding: "10px" }}
+      sx={{
+        mt: "10px",
+        backgroundImage: "none",
+        backgroundColor: "appContainer.border",
+        padding: "10px",
+      }}
       elevation={1}>
       <Stack>
         <Input
@@ -110,9 +115,13 @@ const CommandList = () => {
         />
         <List
           dense={false}
-          sx={{ width: "100%", backgroundColor: "#000" }}
+          sx={{ width: "100%", backgroundColor: "appContainer.background" }}
           subheader={
-            <ListSubheader sx={{ backgroundColor: "#000" }} disableSticky>
+            <ListSubheader
+              sx={{
+                backgroundColor: "appContainer.background",
+              }}
+              disableSticky>
               Command List:
             </ListSubheader>
           }
@@ -126,13 +135,13 @@ const CommandList = () => {
                       key={index}
                       expanded={expanded === "panel" + index.toString()}
                       onChange={handleChange("panel" + index.toString())}
-                      sx={{ backgroundColor: "#000" }}>
+                      sx={{ backgroundColor: "appContainer.background" }}>
                       <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel1a-content"
                         id="panel1a-header"
                         sx={{
-                          backgroundColor: "#000",
+                          backgroundColor: "appContainer.background",
                         }}>
                         {/*// TODO: need to refactor this on bot command table relation done  */}
                         <ListItem dense key={index} disablePadding>
@@ -167,8 +176,8 @@ const CommandList = () => {
                       </AccordionSummary>
                       <AccordionDetails
                         sx={{
-                          backgroundColor: "#000",
-                          borderTopColor: "#000",
+                          backgroundColor: "appContainer.background",
+                          borderTopColor: "appContainer.background",
                           borderStyle: "solid",
                         }}>
                         <Typography paddingLeft={2}>

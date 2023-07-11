@@ -7,52 +7,58 @@ import {
   ListItem,
   Stack,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { env } from "../../env/client.mjs";
 import { FaDiscord, FaTwitch } from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { getDefaultCmdList, getFeatureList } from "../../api";
+import {
+  checkTwitchAccount,
+  getCommandList,
+  getDefaultCmdList,
+  getFeatureList,
+} from "../../api";
 import { randomInt } from "next/dist/shared/lib/bloom-filter/utils";
 import { signIn, useSession } from "next-auth/react";
-import { trpc } from "../../utils/trpc";
+import { useRouter } from "next/router";
 
-const ALT_TEXT = "Open-source multi-platform bot development project, which works on Twitch and Discord.";
+const ALT_TEXT =
+  "Open-source multi-platform bot development project, which works on Twitch and Discord.";
 // Stream overlays: #8b5cf6
 const LandingTexts = () => {
+  const router = useRouter();
   const [cmdList, setCmdList] = useState<string[]>([]);
   const [featureList, setFeatureList] = useState<string[]>([]);
+  const [twitchAccountAvailable, setTwitchAccountAvailable] =
+    useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { data: session } = useSession();
-  const { data: twitchAcc } = trpc.check.checkTwitchAcc.useQuery();
-  const commandList = trpc.command.getCommandList.useQuery();
-
-  const twitchBotMutate = trpc.twitchBot.add.useMutation({
-    onSuccess() {
-      alert("Twitch bot added");
-    },
-
-    onError(error) {
-      if (!error.shape) return;
-      alert(error.shape.message);
-    },
-  });
+  const theme = useTheme();
 
   useEffect(() => {
     getDefaultCmdList().then(res => {
-      if (!commandList.isLoading && session) {
-        const cmds = commandList.data?.map(cmd => "!" + cmd.commandName);
-        if (cmds) {
-          const tocmds = [...res.defaultCmd, ...cmds];
-          setCmdList(tocmds);
-        }
+      if (session) {
+        getCommandList().then(res => {
+          const cmds = res.data.map((cmd: any) => "!" + cmd.commandName);
+          if (cmds) {
+            const tocmds = [...res.defaultCmd, ...cmds];
+            setCmdList(tocmds);
+          }
+        });
       } else {
         setCmdList(res.defaultCmd);
       }
+      setIsLoading(false);
+    });
+
+    checkTwitchAccount().then(res => {
+      setTwitchAccountAvailable(res.data);
     });
 
     getFeatureList().then(res => {
       setFeatureList(res.featureList);
     });
-  }, [commandList.isLoading]);
+  }, [isLoading]);
 
   return (
     <Grid
@@ -74,7 +80,9 @@ const LandingTexts = () => {
             <Typography
               key={index}
               position="absolute"
-              color={cmd[0] === "!" ? "#6034b2" : "#7289da"}
+              color={
+                cmd[0] === "!" ? "landingCmd.primary" : "landingCmd.secondary"
+              }
               top={randomInt(1, 75) + "vh"}
               left={randomInt(1, 90) + "vw"}
               sx={{
@@ -107,10 +115,10 @@ const LandingTexts = () => {
             fontFamily: "monospace",
             fontSize: { xs: "4rem", md: "5rem" },
           }}>
-          <span style={{ color: "#6034b2" }}>
+          <span style={{ color: theme.palette.landingTitle.primary }}>
             {env.NEXT_PUBLIC_APP_NAME.substring(0, 6)}
           </span>
-          <span style={{ color: "#7289da" }}>
+          <span style={{ color: theme.palette.landingTitle.secondary }}>
             {env.NEXT_PUBLIC_APP_NAME.substring(6, 9).charAt(0).toUpperCase() +
               env.NEXT_PUBLIC_APP_NAME.substring(7, 9)}
           </span>
@@ -147,36 +155,36 @@ const LandingTexts = () => {
             variant="contained"
             startIcon={<FaDiscord />}
             sx={{
-              backgroundColor: "#7289da",
+              backgroundColor: "landingDiscordBtn.background",
               "&:hover": {
-                backgroundColor: "rgba(114,137,218,0.74)",
+                backgroundColor: "landingDiscordBtn.backgroundHover",
               },
             }}>
             Get Discord Bot
           </Button>
           <Button
             onClick={() => {
-              if (!session || !twitchAcc) {
+              if (!session || !twitchAccountAvailable) {
                 signIn("twitch", {
                   callbackUrl: `${window.location.origin}/api/twitch/get-bot`,
                 });
               } else {
-                twitchBotMutate.mutate();
+                router.push("/api/twitch/get-bot");
               }
             }}
             variant="contained"
             startIcon={<FaTwitch />}
             sx={{
-              backgroundColor: "#6034b2",
+              backgroundColor: "landingTwitchBtn.background",
               "&:hover": {
-                backgroundColor: "rgba(96,52,178,0.74)",
+                backgroundColor: "landingTwitchBtn.backgroundHover",
               },
             }}>
             Get Twitch Bot
           </Button>
         </Stack>
         <Stack
-          bgcolor="rgba(50,50,50,0.3)"
+          bgcolor="landingTextBackground"
           borderRadius="1px"
           marginTop="5%"
           marginBottom={{ xs: "20%", md: "10%" }}
@@ -192,7 +200,9 @@ const LandingTexts = () => {
                 <ListItem key={index}>
                   <Typography
                     variant="h6"
-                    sx={{ fontFamily: "Source Code Pro", color: "#fff" }}>
+                    sx={{
+                      fontFamily: "Source Code Pro",
+                    }}>
                     {index + 1}) {feature}
                   </Typography>
                 </ListItem>
